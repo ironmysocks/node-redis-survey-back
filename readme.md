@@ -88,3 +88,23 @@ This returns the question and answer content and the results array. The index of
   ]
 }
 ```
+
+Upload data
+----------------
+
+* `POST /upload` populates Redis database with data stored in static js file
+
+**Request:**
+
+``` json
+{
+  token: string
+}
+```
+
+**Response:**
+
+```
+null | false
+
+```

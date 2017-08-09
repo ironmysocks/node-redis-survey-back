@@ -1,6 +1,6 @@
-var raw_data = require('questions');
+var raw_data = require('./questions');
 var redis = require('redis');
-var client = redis.createClient();
+var client = redis.createClient(process.env.REDIS_URL);
 
 //get a question and the answers. if no question_id is provided, a random question is returned
 /*
@@ -143,16 +143,21 @@ var uploadQuestionData = () =>  {
       //Add answers to sorted set
       //  answers:question_id order [ answer_id:text... ]
       raw_data.answers.forEach((a) => {
-        console.log(`adding: answers:${a.question_id} ${a.order} ${a.id}:${a.text}`);
-        client.zadd(`answers:${a.question_id}`,a.order,`${a.id}:${a.text}`);
+        //console.log(`adding: answers:${a.question_id} ${a.order} ${a.id}:${a.text}`);
+        client.zadd(`answers:${a.question_id}`,a.order,`${a.id}:${a.text}`, (error) =>{
+          if (error) return false;
+        });
       });
 
       //Add questions to hash
       // questions: [id] = text
       raw_data.questions.forEach((q) => {
-          console.log(`adding: questions ${q.id} ${q.text}`);
-          client.hset("questions",q.id,q.text);
+          //console.log(`adding: questions ${q.id} ${q.text}`);
+          client.hset("questions",q.id,q.text, (error) => {
+            if (error) return false;
+          });
 
+          /*
           //Output questions and answers to screen
           client.hget("questions",q.id, (error, q) => {
             console.log(q);
@@ -162,6 +167,7 @@ var uploadQuestionData = () =>  {
               console.log("   " + parseInt(i+1) + ") " + m);
             });
           });
+          */
       });
 };
 
@@ -171,4 +177,4 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
-module.exports = {getQuestionData, saveResponse, getResults};
+module.exports = {getQuestionData, saveResponse, getResults, uploadQuestionData};

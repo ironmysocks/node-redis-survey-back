@@ -3,6 +3,15 @@ var app = express();
 var bodyParser = require('body-parser');
 var data = require('./model');
 
+//Allow access to the API from an app with same origin
+/*
+app.all('/*', function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+*/
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -42,6 +51,22 @@ router.route('/questions/:question_id/results')
             res.send(error);
         });
       });
+
+router.route('/upload')
+
+  // upload static data into Redis (accessed at POST /upload)
+  .post((req, res) => {
+    if (req.params.token=="undefined" || req.params.token!="supersecret") {
+      res.send("Failed: Authentication invalid");
+    } else {
+      data.uploadQuestionData()
+          .then( (result) => {
+            res.send("Success");
+          }, (error) => {
+            res.send(error);
+          });
+      }
+    });
 
 app.use('/api', router);
 app.listen(port, error => {
