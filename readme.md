@@ -13,17 +13,13 @@ Get question
 ``` json
 {
   "question": {
-    "id": "1",
-    "text": "What is the question?"
+    "id": integer,
+    "text": string
   },
   "answers": [
     {
-      "id": "1",
-      "text": "Answer 1"
-    },
-    {
-      "id": "2",
-      "text": "Answer 2"
+      "id": integer,
+      "text": string
     },
     ...
   ]
@@ -41,7 +37,7 @@ Answer question
 
 ``` json
 {
-  answer_id: "1"
+  answer_id: integer
 }
 ```
 
@@ -60,31 +56,22 @@ Get results
 
 **Response:**
 
-This returns the question and answer content and the results array. The index of each item in the results array corresponds to the answer_id of those results. Null items indicate that there were no responses with that corresponding answer_id.
+This returns the question and answer content with results.
 
 ``` json
 {
   "question": {
-    "id": "1",
-    "text": "What is the question?"
+    "id": integer,
+    "text": string
   },
   "answers": [
     {
-      "id": "1",
-      "text": "Answer 1"
-    },
-    {
-      "id": "2",
-      "text": "Answer 2"
+      "id": integer,
+      "text": string,
+      "num_responses": integer,
+      "percent": integer
     },
     ...
-  ],
-  "results": [
-    null,
-    {
-      "num_responses": 2,
-      "percent": 100
-    }
   ]
 }
 ```

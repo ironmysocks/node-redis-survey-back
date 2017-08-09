@@ -4,13 +4,11 @@ var bodyParser = require('body-parser');
 var data = require('./model');
 
 //Allow access to the API from an app with same origin
-/*
 app.all('/*', function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
-*/
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -68,7 +66,6 @@ router.route('/upload')
       }
     });
 
-app.use('/api', router);
 app.listen(port, error => {
   if (error) return console.error(err);
   console.info(`Server running on port ${port}`);

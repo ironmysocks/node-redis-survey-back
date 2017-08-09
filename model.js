@@ -27,6 +27,8 @@ var getQuestionData = (question_id) => {
   return new Promise((resolve,reject) => {
 
     client.hkeys("questions",(error,keys) => {
+      if (error) reject("Failed: ", error);
+
       if (question_id!="undefined") {
         var i = getRandomInt(0,keys.length);
         question_id = keys[i];
@@ -99,40 +101,67 @@ var saveResponse = (question_id,answer_id) => {
 }
 
 var getResults = (question_id) => {
-  var results = [];
-  return new Promise((resolve,reject) => {
 
-    //get results for this question
-    client.lrange(`results:${question_id}`,0,-1, (error, data) => {
-      var total_responses = data.length;
+  return new Promise ((resolve,reject) => {
+    getQuestionData(question_id)
+      .then((qa) => {
+        getResultData(question_id)
+          .then((res) => {
 
-      //build array with result tally. [answer_id] => num responses
-      for (var i=0;i<total_responses;i++) {
-          var answer_id = data[i];
-          if (results[answer_id]==undefined) {
-            results[answer_id] = {
-                num_responses: 1
+            //build results object
+            var results = {
+              question: qa.question,
+              answers: []
             };
-          } else results[answer_id].num_responses = results[answer_id].num_responses+1;
-      }
 
-      //calculate percentages for each answer id
-      results.forEach((r) => {
-        r.percent = Math.floor((r.num_responses/total_responses)*100);
-      });
+            qa.answers.forEach( (a,i) => {
+              if (res[a.id] !== "undefined") {
+                results.answers[i] = {
+                  id: qa.answers[i].id,
+                  text: qa.answers[i].text,
+                  num_responses: res[a.id].num_responses,
+                  percent: res[a.id].percent
+                }
+              }
+            });
+            resolve(results);
 
-      //Bundle question and answer content with the results
-      getQuestionData(question_id)
-        .then((qa) => {
-          resolve({
-            question: qa.question,
-            answers: qa.answers,
-            results: results
-          });
-        }, (error) => {
+          }, (error) => {
             reject("Failed: ", error);
-        });
+          });
+      }, (error) => {
+        reject("Failed: ", error);
       });
+    });
+}
+
+var getResultData = (question_id) => {
+
+  return new Promise ((resolve,reject) => {
+
+    var res = [];
+    client.lrange(`results:${question_id}`,0,-1, (error, data) => {
+        if (error) reject("Failed: ", error);
+
+        var total_responses = data.length;
+
+        //build array with result tally. [answer_id] => num responses
+        for (var i=0;i<total_responses;i++) {
+            var answer_id = data[i];
+            if (res[answer_id]==undefined) {
+              res[answer_id] = {
+                  num_responses: 1
+              };
+            } else res[answer_id].num_responses = res[answer_id].num_responses+1;
+        }
+
+        //calculate percentages for each answer id
+        res.forEach((r) => {
+          r.percent = Math.floor((r.num_responses/total_responses)*100);
+        });
+
+        resolve(res);
+    });
   });
 }
 
