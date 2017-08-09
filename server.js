@@ -54,12 +54,12 @@ router.route('/upload')
 
   // upload static data into Redis (accessed at POST /upload)
   .post((req, res) => {
-    if (req.params.token=="undefined" || req.params.token!="supersecret") {
-      res.send("Failed: Authentication invalid");
+    if (req.body.token=="undefined" || req.body.token!="supersecure") {
+      res.send("Failed: authentication invalid");
     } else {
       data.uploadQuestionData()
           .then( (result) => {
-            res.send("Success");
+            res.send("Successful upload");
           }, (error) => {
             res.send(error);
           });

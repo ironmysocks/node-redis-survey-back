@@ -171,6 +171,7 @@ var getResultData = (question_id) => {
 
 //RUN ONCE ONLY
 //Put the question data into the database
+//Umcomment console.log code for debugging local installs
 var uploadQuestionData = () =>  {
 
       //Add answers to sorted set
