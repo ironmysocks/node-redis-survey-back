@@ -6,7 +6,7 @@ This backend API is used to store and retrieve questions, multiple-choice answer
 Get question
 ------------
 
-* `GET /api/questions/:question_id` returns a question and multiple choice answers
+* `GET /api/questions/:question_id` returns a question and multiple choice answers. Returns false if the question does not exist.
 
 **Response:**
 
@@ -31,7 +31,7 @@ Get question
 Answer question
 ----------------
 
-* `POST /questions/:question_id` stores a response to the question
+* `POST /questions/:question_id` stores a response to the question. Returns false if the question does not exist.
 
 **Request:**
 
@@ -56,7 +56,7 @@ Get results
 
 **Response:**
 
-This returns the question and answer content with results.
+This returns the question and answer content with results. Returns false if there are no results or if the question does not exist.
 
 ``` json
 {

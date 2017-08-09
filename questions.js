@@ -31,7 +31,7 @@ const data =
     {
       "id": 6,
       "order": 1,
-      "text": "Fran: 21-15-9 Pullups, 55lb. Thrusters",
+      "text": "Fran\: 21-15-9 Pullups, 55lb. Thrusters",
       "question_id": 2
     },
     {
