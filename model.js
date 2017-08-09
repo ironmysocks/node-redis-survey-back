@@ -1,11 +1,13 @@
 var raw_data = require('./questions');
 
 var redis = require('redis');
+
 var url = require('url');
 var redisURL = url.parse(process.env.REDISCLOUD_URL);
 var client = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
-//var client = redis.createClient();
 client.auth(redisURL.auth.split(":")[1]);
+
+//var client = redis.createClient();
 
 //get a question and the answers by id
 var getQuestionData = (question_id) => {
@@ -101,20 +103,12 @@ var getResults = (question_id) => {
           .then((res) => {
 
             //build results object
-            var results = {
-              question: qa.question,
-              answers: []
-            };
-
             qa.answers.forEach( (a,i) => {
-              results.answers[i] = {
-                id: qa.answers[i].id,
-                text: qa.answers[i].text,
-                num_responses: (typeof res[a.id] === "undefined" ? 0 : res[a.id].num_responses),
-                percent: (typeof res[a.id] === "undefined" ? 0 : res[a.id].percent)
-              };
+              console.log(res[a.id]==="undefined");
+              a.num_responses = (typeof res[a.id] === "undefined" ? 0 : res[a.id].num_responses);
+              a.percent = (typeof res[a.id] === "undefined" ? 0 : res[a.id].percent);
             });
-            resolve(results);
+            resolve(qa);
 
           }, (error) => {
             reject(false);
@@ -200,9 +194,5 @@ var uploadQuestionData = () =>  {
 
   });
 };
-
-function isInt(n){
-  return Number(n) === n && n % 1 === 0;
-}
 
 module.exports = {getQuestionData, saveResponse, getResults, uploadQuestionData};
