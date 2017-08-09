@@ -94,10 +94,12 @@ var getResults = (question_id) => {
   return new Promise ((resolve,reject) => {
 
     if (question_id===undefined) reject(false);
+
     getQuestionData(question_id)
       .then((qa) => {
         getResultData(question_id)
           .then((res) => {
+
             //build results object
             var results = {
               question: qa.question,
@@ -136,13 +138,11 @@ var getResultData = (question_id) => {
 
           //build array with result tally. [answer_id] => num responses
           for (var i=0;i<total_responses;i++) {
-              if (isInt(data[i])) {
-                var answer_id = data[i];
-                if (typeof res[answer_id]=="undefined") {
-                  res[answer_id] = { num_responses: 0 }
-                }
-                res[answer_id].num_responses = res[answer_id].num_responses+1;
+              var answer_id = data[i];
+              if (typeof res[answer_id]=="undefined") {
+                res[answer_id] = { num_responses: 0 }
               }
+              res[answer_id].num_responses = res[answer_id].num_responses+1;
           }
 
           //calculate percentages for each answer id
