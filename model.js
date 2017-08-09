@@ -4,32 +4,12 @@ var redis = require('redis');
 var url = require('url');
 var redisURL = url.parse(process.env.REDISCLOUD_URL);
 var client = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
+//var client = redis.createClient();
 client.auth(redisURL.auth.split(":")[1]);
 
 //get a question and the answers by id
-/*
-Return data format:
-{
-  question: {
-    id: question_id,
-    text: text
-  },
-  answers: [
-    {
-      id: answer_id,
-      text: text
-    },
-    {
-      id: answer_id,
-      text: text
-    },
-    ...
-  ]
-}
-*/
 var getQuestionData = (question_id) => {
   return new Promise((resolve,reject) => {
-
     if (question_id==="undefined") reject(false);
     else {
       getQuestion(question_id)
@@ -112,11 +92,12 @@ var saveResponse = (question_id,answer_id) => {
 var getResults = (question_id) => {
 
   return new Promise ((resolve,reject) => {
+
+    if (question_id===undefined) reject(false);
     getQuestionData(question_id)
       .then((qa) => {
         getResultData(question_id)
           .then((res) => {
-
             //build results object
             var results = {
               question: qa.question,
@@ -124,14 +105,12 @@ var getResults = (question_id) => {
             };
 
             qa.answers.forEach( (a,i) => {
-              if (res[a.id] !== "undefined") {
-                results.answers[i] = {
-                  id: qa.answers[i].id,
-                  text: qa.answers[i].text,
-                  num_responses: res[a.id].num_responses,
-                  percent: res[a.id].percent
-                }
-              }
+              results.answers[i] = {
+                id: qa.answers[i].id,
+                text: qa.answers[i].text,
+                num_responses: (typeof res[a.id] === "undefined" ? 0 : res[a.id].num_responses),
+                percent: (typeof res[a.id] === "undefined" ? 0 : res[a.id].percent)
+              };
             });
             resolve(results);
 
@@ -151,26 +130,31 @@ var getResultData = (question_id) => {
     var res = [];
     client.lrange(`results:${question_id}`,0,-1, (error, data) => {
         if (error) reject(false);
-        else if (data instanceof Array) reject(false);
+        else if (!(data instanceof Array)) reject(false);
+        else {
+          var total_responses = data.length;
 
-        var total_responses = data.length;
+          //build array with result tally. [answer_id] => num responses
+          for (var i=0;i<total_responses;i++) {
+              if (isInt(data[i])) {
+                var answer_id = data[i];
+                if (typeof res[answer_id]=="undefined") {
+                  res[answer_id] = { num_responses: 0 }
+                }
+                res[answer_id].num_responses = res[answer_id].num_responses+1;
+              }
+          }
 
-        //build array with result tally. [answer_id] => num responses
-        for (var i=0;i<total_responses;i++) {
-            var answer_id = data[i];
-            if (res[answer_id]==undefined) {
-              res[answer_id] = {
-                  num_responses: 1
-              };
-            } else res[answer_id].num_responses = res[answer_id].num_responses+1;
+          //calculate percentages for each answer id
+          if (res.length>0) {
+            res.forEach((r) => {
+                if (r.num_responses !== "undefined") {
+                  r.percent = Math.floor((r.num_responses/total_responses)*100);
+                }
+            });
+          }
+          resolve(res);
         }
-
-        //calculate percentages for each answer id
-        res.forEach((r) => {
-          r.percent = Math.floor((r.num_responses/total_responses)*100);
-        });
-
-        resolve(res);
     });
   });
 }
@@ -217,10 +201,8 @@ var uploadQuestionData = () =>  {
   });
 };
 
-function getRandomInt(min, max) {
-  var min = Math.ceil(min);
-  var max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min)) + min;
+function isInt(n){
+  return Number(n) === n && n % 1 === 0;
 }
 
 module.exports = {getQuestionData, saveResponse, getResults, uploadQuestionData};
