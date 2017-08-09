@@ -66,6 +66,7 @@ router.route('/upload')
       }
     });
 
+app.use('/api', router);
 app.listen(port, error => {
   if (error) return console.error(err);
   console.info(`Server running on port ${port}`);
