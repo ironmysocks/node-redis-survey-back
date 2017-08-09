@@ -1,6 +1,10 @@
 var raw_data = require('./questions');
+
 var redis = require('redis');
-var client = redis.createClient(process.env.REDIS_URL);
+var url = require('url');
+var redisURL = url.parse(process.env.REDISCLOUD_URL);
+var client = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true});
+client.auth(redisURL.auth.split(":")[1]);
 
 //get a question and the answers. if no question_id is provided, a random question is returned
 /*
